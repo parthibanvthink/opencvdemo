@@ -1,0 +1,37 @@
+{
+  "buildFiles": [
+    "/Users/bhuvaneswari/AndroidStudioProjects/MyApplication3/opencv/libcxx_helper/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/bhuvaneswari/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/bhuvaneswari/AndroidStudioProjects/MyApplication3/opencv/.cxx/Debug/5n2s206z/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/bhuvaneswari/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/bhuvaneswari/AndroidStudioProjects/MyApplication3/opencv/.cxx/Debug/5n2s206z/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "opencv_jni_shared::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "opencv_jni_shared",
+      "output": "/Users/bhuvaneswari/AndroidStudioProjects/MyApplication3/opencv/.cxx/Debug/5n2s206z/x86/libopencv_jni_shared.a"
+    }
+  },
+  "toolchains": {
+    "toolchain": {
+      "cCompilerExecutable": "/Users/bhuvaneswari/Library/Android/sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang.lld",
+      "cppCompilerExecutable": "/Users/bhuvaneswari/Library/Android/sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++.lld"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}
