@@ -52,6 +52,7 @@ import android.Manifest;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     private static final String IMAGE_FILE_PATH = "";
@@ -88,9 +89,41 @@ public class MainActivity extends AppCompatActivity {
                 pickImageFromGallery();
             }
         });
+
+        Button captureButton = findViewById(R.id.open_Camera);
+        captureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openCamera();
+            }
+        });
         if (OpenCVLoader.initLocal()) {
             Log.i("OpenCV", "OpenCV successfully loaded.");
         }
+    }
+    private void openCamera() {
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        if (cameraIntent.resolveActivity(getPackageManager()) != null) {
+            File photoFile = createImageFile();
+            if (photoFile != null) {
+                photoUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", photoFile);
+                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        }
+    }
+    private File createImageFile() {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = null;
+        try {
+            image = File.createTempFile(imageFileName, ".jpg", storageDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return image;
     }
 
     @Override
@@ -252,23 +285,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void openCamera() throws IOException {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            File photoFile = createImageFile();
-            if (photoFile != null) {
-                photoUri = FileProvider.getUriForFile(this, "com.example.myapplication.file-provider", photoFile);
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-            }
-        }
-    }
 
-    private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        return File.createTempFile("JPEG_" + timeStamp + "_", ".jpg", storageDir);
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -279,11 +296,19 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK) {
             if (requestCode == REQUEST_IMAGE_CAPTURE) {
                 analyzeImage(String.valueOf(photoUri));
+                selectedImageView.setImageURI(photoUri);
+                selectedImageView.setVisibility(View.VISIBLE);
             } else if (requestCode == REQUEST_GALLERY_PICK && data != null) {
                 Uri selectedImageUri = data.getData();
                 analyzeImage(String.valueOf(selectedImageUri));
                 selectedImageView.setImageURI(selectedImageUri);
                 selectedImageView.setVisibility(View.VISIBLE);
+            }else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+                // photoUri contains the image URI
+                analyzeImage(String.valueOf(photoUri));
+                selectedImageView.setImageURI(photoUri);
+                selectedImageView.setVisibility(View.VISIBLE);
+                Toast.makeText(this, "Image saved: " + photoUri.getPath(), Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -292,5 +317,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d("Pick photo data", String.valueOf(pickPhoto));
         startActivityForResult(pickPhoto, REQUEST_GALLERY_PICK);
     }
+
 
 }

@@ -25,17 +25,23 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp"
+        android:padding="36dp"
         android:layout_marginTop="?attr/actionBarSize"
         android:gravity="center_horizontal">
 
         <!-- Button -->
         <Button
             android:id="@+id/pick_gallery_Image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/pick_Image" />
-
+            android:layout_width="200dp"
+            android:layout_height="70dp"
+            android:text="@string/pick_Image"
+            android:textSize="18sp"/>
+        <Button
+            android:id="@+id/open_Camera"
+            android:layout_width="200dp"
+            android:layout_height="70dp"
+            android:text="@string/camera"
+            android:textSize="18sp"/>
         <!-- ImageView -->
         <ImageView
             android:id="@+id/selected_image_view"
