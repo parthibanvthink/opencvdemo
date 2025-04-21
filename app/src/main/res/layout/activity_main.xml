@@ -59,15 +59,15 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="Blur value will appear here"
-            android:textSize="16sp"
+            android:textSize="20sp"
             android:visibility="gone" />
         <TextView
             android:id="@+id/user_Message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="18dp"
             android:text="Blur value will appear here"
-            android:textSize="16sp"
+            android:textSize="20sp"
             android:visibility="gone" />
         <TextView
             android:id="@+id/Image_bright"
