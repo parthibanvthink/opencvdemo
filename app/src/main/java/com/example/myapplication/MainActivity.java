@@ -153,12 +153,8 @@ public class MainActivity extends AppCompatActivity {
             Core.MinMaxLocResult mmr = Core.minMaxLoc(gray);
 
             double contrast = mmr.maxVal - mmr.minVal;
-            String result = analyzeImage(brightness,sharpness);
-            Log.d("ImageAnalysis result",result);
-
-            // Build JSON output
+            analyzeImage(sharpness,edgeDensity,contrast,brightness);
             String jsonOutput = String.format("{\"brightness\": %.2f, \"sharpness\": %.2f,\"edgeDensity\": %.2f,\"contrast\": %.2f}", brightness, sharpness,edgeDensity,contrast);
-            Log.d("ImageAnalysis", jsonOutput); // print the result to Logcat
             TextView myTextView = findViewById(R.id.blur_result_text);
             myTextView.setText(jsonOutput);
             myTextView.setVisibility(View.VISIBLE);
@@ -207,22 +203,44 @@ public class MainActivity extends AppCompatActivity {
         return tempFile;
     }
 
-    public String analyzeImage(Double brightness, Double sharpness) {
-        // Brightness thresholds (0-255 scale for grayscale)
-        if (brightness < 40) {
-            return "Too dark";
+
+    public void analyzeImage(double sharpness, double edgeDensity, double contrast, double brightness) {
+        TextView myTextView = findViewById(R.id.user_Message);
+        TextView Image_bright = findViewById(R.id.Image_bright);
+
+        // Reset visibility and text first
+        myTextView.setVisibility(View.GONE);
+        myTextView.setText("");
+        Image_bright.setVisibility(View.GONE);
+        Image_bright.setText("");
+
+        // Check focus & clarity
+        if (edgeDensity > 0.06 && sharpness > 300) {
+            if (contrast > 249) {
+                myTextView.setText("Image is clear.");
+            } else {
+                myTextView.setText("Image is not focused.");
+            }
+        } else if (edgeDensity == 0.07 && contrast < 249) {
+            myTextView.setText("Image is not focused.");
+        } else if (edgeDensity < 0.07 && sharpness < 300) {
+            myTextView.setText("Image is not focused.");
+        } else {
+            myTextView.setText("Image is unclear.");
         }
 
-        if (brightness > 220) {
-            return "Too bright";
-        }
+        // Make the message visible
+        myTextView.setVisibility(View.VISIBLE);
 
-        // Sharpness threshold (variance of Laplacian): <100 is considered blurry
-        if (sharpness < 700) {
-            return "Blurry";
+        // Check brightness
+        if (brightness < 80) {
+            Image_bright.setText("Image requires light.");
+            Image_bright.setVisibility(View.VISIBLE);
+        } else if (brightness <= 170) {
+        } else {
+            Image_bright.setText("Image is overexposed in light.");
+            Image_bright.setVisibility(View.VISIBLE);
         }
-
-        return "Good";
     }
     private void requestPermissions() {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||

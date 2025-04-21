@@ -55,5 +55,21 @@
             android:text="Blur value will appear here"
             android:textSize="16sp"
             android:visibility="gone" />
+        <TextView
+            android:id="@+id/user_Message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Blur value will appear here"
+            android:textSize="16sp"
+            android:visibility="gone" />
+        <TextView
+            android:id="@+id/Image_bright"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Blur value will appear here"
+            android:textSize="16sp"
+            android:visibility="gone" />
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
