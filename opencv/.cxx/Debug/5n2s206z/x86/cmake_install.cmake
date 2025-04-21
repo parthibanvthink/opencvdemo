@@ -1,4 +1,4 @@
-# Install script for directory: /Users/bhuvaneswari/AndroidStudioProjects/MyApplication3/opencv/libcxx_helper
+# Install script for directory: /Users/bhuvaneswari/Documents/FieldNote/opencvdemo/opencv/libcxx_helper
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/Users/bhuvaneswari/AndroidStudioProjects/MyApplication3/opencv/.cxx/Debug/5n2s206z/x86/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/Users/bhuvaneswari/Documents/FieldNote/opencvdemo/opencv/.cxx/Debug/5n2s206z/x86/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

@@ -1,5 +1,5 @@
 {
-  "installationFolder": "/Users/bhuvaneswari/AndroidStudioProjects/MyApplication3/opencv/build/intermediates/prefab_package/release/prefab",
+  "installationFolder": "/Users/bhuvaneswari/Documents/FieldNote/opencvdemo/opencv/build/intermediates/prefab_package/release/prefab",
   "gradlePath": ":opencv",
   "packageInfo": {
     "packageName": "opencv",
@@ -8,7 +8,7 @@
     "modules": [
       {
         "moduleName": "opencv_jni_shared",
-        "moduleHeaders": "/Users/bhuvaneswari/AndroidStudioProjects/MyApplication3/opencv/native/jni/include",
+        "moduleHeaders": "/Users/bhuvaneswari/Documents/FieldNote/opencvdemo/opencv/native/jni/include",
         "moduleExportLibraries": [],
         "abis": []
       }

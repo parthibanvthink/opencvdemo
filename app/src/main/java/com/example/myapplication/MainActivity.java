@@ -1,16 +1,25 @@
 package com.example.myapplication;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.view.WindowCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -23,43 +32,65 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.w3c.dom.Text;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import android.Manifest;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String IMAGE_FILE_PATH = "/storage/emulated/0/DCIM/Camera/20250418_155340.jpg";
-
+    private static final String IMAGE_FILE_PATH = "";
+    private static final int REQUEST_PERMISSIONS = 123;
+    private static final int REQUEST_IMAGE_CAPTURE = 456;
+    private static final int REQUEST_IMAGE_PICK = 789;
+    private static final int REQUEST_GALLERY_PICK = 1011;
+    private Uri photoUri;
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
+    ImageView selectedImageView;
+    Button pickImageButton;
+    private static final int PICK_IMAGE_REQUEST = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
-
+        requestPermissions();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
-        binding.fab.setOnClickListener(new View.OnClickListener() {
+
+
+        Button galleryButton = findViewById(R.id.pick_gallery_Image);
+        selectedImageView = findViewById(R.id.selected_image_view);
+        galleryButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAnchorView(R.id.fab)
-                        .setAction("Action", null).show();
+            public void onClick(View v) {
+                pickImageFromGallery();
             }
         });
         if (OpenCVLoader.initLocal()) {
             Log.i("OpenCV", "OpenCV successfully loaded.");
         }
-        analyzeImage(IMAGE_FILE_PATH);
     }
 
     @Override
@@ -92,9 +123,11 @@ public class MainActivity extends AppCompatActivity {
     }
     public void analyzeImage(String imagePath) {
         try {
-            Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+            File tempFile  = createTempFileFromUri(Uri.parse(imagePath));
+            Bitmap bitmap = BitmapFactory.decodeFile(tempFile.getAbsolutePath());
+            Bitmap resizedBitmap = getResizedBitmapCV(bitmap, 300, 300);
             Mat mat = new Mat();
-            org.opencv.android.Utils.bitmapToMat(bitmap, mat);
+            org.opencv.android.Utils.bitmapToMat(resizedBitmap, mat);
 
             // Convert to grayscale
             Mat gray = new Mat();
@@ -122,9 +155,13 @@ public class MainActivity extends AppCompatActivity {
             double contrast = mmr.maxVal - mmr.minVal;
             String result = analyzeImage(brightness,sharpness);
             Log.d("ImageAnalysis result",result);
+
             // Build JSON output
             String jsonOutput = String.format("{\"brightness\": %.2f, \"sharpness\": %.2f,\"edgeDensity\": %.2f,\"contrast\": %.2f}", brightness, sharpness,edgeDensity,contrast);
             Log.d("ImageAnalysis", jsonOutput); // print the result to Logcat
+            TextView myTextView = findViewById(R.id.blur_result_text);
+            myTextView.setText(jsonOutput);
+            myTextView.setVisibility(View.VISIBLE);
 
             // (Optional) You can return this string if calling from another method
             // return jsonOutput;
@@ -133,6 +170,43 @@ public class MainActivity extends AppCompatActivity {
             Log.e("ImageAnalysis", "Error analyzing image", e);
         }
     }
+    private Bitmap getResizedBitmapCV(Bitmap inputBitmap, int newWidth, int newHeight) {
+        // Convert the input Bitmap to a Mat
+        Mat inputMat = new Mat();
+        Utils.bitmapToMat(inputBitmap, inputMat);
+
+        // Create a new Mat for the resized image
+        Mat resizedMat = new Mat();
+        Imgproc.resize(inputMat, resizedMat, new Size(newWidth, newHeight));
+
+        // Convert the resized Mat back to a Bitmap
+        Bitmap resizedBitmap = Bitmap.createBitmap(newWidth, newHeight, Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(resizedMat, resizedBitmap);
+
+        inputMat.release();
+        resizedMat.release();
+
+        return resizedBitmap;
+    }
+    public File createTempFileFromUri(Uri uri) throws IOException {
+        InputStream inputStream = getContentResolver().openInputStream(uri);
+        String fileName = "temp_image_" + System.currentTimeMillis() + ".jpg";
+        File tempFile = new File(getCacheDir(), fileName);
+
+        FileOutputStream outputStream = new FileOutputStream(tempFile);
+
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = inputStream.read(buffer)) > 0) {
+            outputStream.write(buffer, 0, len);
+        }
+
+        outputStream.close();
+        inputStream.close();
+
+        return tempFile;
+    }
+
     public String analyzeImage(Double brightness, Double sharpness) {
         // Brightness thresholds (0-255 scale for grayscale)
         if (brightness < 40) {
@@ -144,10 +218,61 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Sharpness threshold (variance of Laplacian): <100 is considered blurry
-        if (sharpness < 400) {
+        if (sharpness < 700) {
             return "Blurry";
         }
 
         return "Good";
     }
+    private void requestPermissions() {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_PERMISSIONS);
+        }
+    }
+
+    private void openCamera() throws IOException {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            File photoFile = createImageFile();
+            if (photoFile != null) {
+                photoUri = FileProvider.getUriForFile(this, "com.example.myapplication.file-provider", photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        }
+    }
+
+    private File createImageFile() throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        return File.createTempFile("JPEG_" + timeStamp + "_", ".jpg", storageDir);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d("requestCode", String.valueOf(requestCode));
+        Log.d("resultcode", String.valueOf(resultCode));
+        Log.d("Result_ok", String.valueOf(RESULT_OK));
+        if (resultCode == RESULT_OK) {
+            if (requestCode == REQUEST_IMAGE_CAPTURE) {
+                analyzeImage(String.valueOf(photoUri));
+            } else if (requestCode == REQUEST_GALLERY_PICK && data != null) {
+                Uri selectedImageUri = data.getData();
+                analyzeImage(String.valueOf(selectedImageUri));
+                selectedImageView.setImageURI(selectedImageUri);
+                selectedImageView.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+    private void pickImageFromGallery() {
+        Intent pickPhoto = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        Log.d("Pick photo data", String.valueOf(pickPhoto));
+        startActivityForResult(pickPhoto, REQUEST_GALLERY_PICK);
+    }
+
 }

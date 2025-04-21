@@ -42,7 +42,7 @@ rule CUSTOM_COMMAND
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = /Users/bhuvaneswari/Library/Android/sdk/cmake/3.22.1/bin/cmake --regenerate-during-build -S/Users/bhuvaneswari/AndroidStudioProjects/MyApplication3/opencv/libcxx_helper -B/Users/bhuvaneswari/AndroidStudioProjects/MyApplication3/opencv/.cxx/Debug/5n2s206z/x86
+  command = /Users/bhuvaneswari/Library/Android/sdk/cmake/3.22.1/bin/cmake --regenerate-during-build -S/Users/bhuvaneswari/Documents/FieldNote/opencvdemo/opencv/libcxx_helper -B/Users/bhuvaneswari/Documents/FieldNote/opencvdemo/opencv/.cxx/Debug/5n2s206z/x86
   description = Re-running CMake...
   generator = 1
 

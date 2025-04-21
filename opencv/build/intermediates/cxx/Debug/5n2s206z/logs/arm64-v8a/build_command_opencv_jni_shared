@@ -1,4 +1,4 @@
 /Users/bhuvaneswari/Library/Android/sdk/cmake/3.22.1/bin/ninja \
   -C \
-  /Users/bhuvaneswari/AndroidStudioProjects/MyApplication3/opencv/.cxx/Debug/5n2s206z/arm64-v8a \
+  /Users/bhuvaneswari/Documents/FieldNote/opencvdemo/opencv/.cxx/Debug/5n2s206z/arm64-v8a \
   opencv_jni_shared
