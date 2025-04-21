@@ -233,8 +233,8 @@ public class MainActivity extends AppCompatActivity {
         myTextView.setVisibility(View.VISIBLE);
 
         // Check brightness
-        if (brightness < 80) {
-            Image_bright.setText("Image requires light.");
+        if (brightness < 90) {
+            Image_bright.setText("Image lacks lighting.");
             Image_bright.setVisibility(View.VISIBLE);
         } else if (brightness <= 170) {
         } else {
