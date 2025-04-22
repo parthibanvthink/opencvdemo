@@ -189,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
 //            TextView myTextView = findViewById(R.id.blur_result_text);
 //            myTextView.setText(jsonOutput);
 //            myTextView.setVisibility(View.VISIBLE);
+            Log.d("JSON objects",jsonOutput);
             // (Optional) You can return this string if calling from another method
             // return jsonOutput;
 
@@ -278,12 +279,8 @@ public class MainActivity extends AppCompatActivity {
         } else if (brightness > 50 && brightness <= 80) {
             isBadQuality = true;
             myTextView.append("* Image is too dark.\n");
-        } else if (brightness > 80 && brightness <= 120) {
-            myTextView.append("* Image could use a bit more lighting.\n");
-        } else if (brightness > 120 && brightness <= 170) {
+        } else if (brightness > 80 && brightness <= 200) {
             // Ideal range
-        } else if (brightness > 170 && brightness <= 200) {
-            myTextView.append("* Image is a bit overexposed.\n");
         } else if (brightness > 200 && brightness <= 230) {
             isBadQuality = true;
             myTextView.append("* Image is overexposed.\n");
