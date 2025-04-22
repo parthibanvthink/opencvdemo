@@ -286,7 +286,7 @@ public class MainActivity extends AppCompatActivity {
             myTextView.append("* Image is a bit overexposed.\n");
         } else if (brightness > 200 && brightness <= 230) {
             isBadQuality = true;
-            myTextView.append("* Image is too bright.\n");
+            myTextView.append("* Image is overexposed.\n");
         } else if (brightness > 230 && brightness <= 255) {
             isBadQuality = true;
             myTextView.append("* Image is highly overexposed.\n");
