@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
             isBadQuality = true;
             myTextView.append("* Image is too dark.\n");
         } else if (brightness > 80 && brightness <= 120) {
-            isBadQuality = true;
+//            isBadQuality = true;
             myTextView.append("* Image could use a bit more lighting.\n");
         } else if (brightness > 120 && brightness <= 170) {
             // Ideal range
