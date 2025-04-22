@@ -31,6 +31,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="36dp"
+        android:paddingBottom="20dp"
         android:layout_marginTop="?attr/actionBarSize"
         android:gravity="center_horizontal">
     <LinearLayout
@@ -38,7 +39,8 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_marginTop="16dp"
-        android:gravity="center_horizontal">
+        android:gravity="center_horizontal"
+        android:layout_marginBottom="16dp">
         <!-- Button -->
         <Button
             android:id="@+id/pick_gallery_Image"
@@ -61,12 +63,22 @@
             android:id="@+id/selected_image_view"
             android:layout_width="500dp"
             android:layout_height="500dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="30dp"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
+            android:background="#EEEEEE"
+            android:layout_marginBottom="30dp"
             android:visibility="gone" />
 
         <!-- Blur Detection Result -->
+        <TextView
+            android:id="@+id/Image_bright"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Blur value will appear here"
+            android:textSize="20sp"
+            android:visibility="gone" />
         <TextView
             android:id="@+id/blur_result_text"
             android:layout_width="wrap_content"
@@ -80,14 +92,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:text="Blur value will appear here"
-            android:textSize="20sp"
-            android:visibility="gone" />
-        <TextView
-            android:id="@+id/Image_bright"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
             android:text="Blur value will appear here"
             android:textSize="20sp"
             android:visibility="gone" />

@@ -46,7 +46,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import android.Manifest;
 import android.widget.Button;
@@ -184,10 +186,9 @@ public class MainActivity extends AppCompatActivity {
             double contrast = mmr.maxVal - mmr.minVal;
             analyzeImage(sharpness,edgeDensity,contrast,brightness);
             String jsonOutput = String.format("{\"brightness\": %.2f, \"sharpness\": %.2f,\"edgeDensity\": %.2f,\"contrast\": %.2f}", brightness, sharpness,edgeDensity,contrast);
-            TextView myTextView = findViewById(R.id.blur_result_text);
-            myTextView.setText(jsonOutput);
-            myTextView.setVisibility(View.VISIBLE);
-
+//            TextView myTextView = findViewById(R.id.blur_result_text);
+//            myTextView.setText(jsonOutput);
+//            myTextView.setVisibility(View.VISIBLE);
             // (Optional) You can return this string if calling from another method
             // return jsonOutput;
 
@@ -237,40 +238,72 @@ public class MainActivity extends AppCompatActivity {
         TextView myTextView = findViewById(R.id.user_Message);
         TextView Image_bright = findViewById(R.id.Image_bright);
 
-        // Reset visibility and text first
         myTextView.setVisibility(View.GONE);
         myTextView.setText("");
         Image_bright.setVisibility(View.GONE);
         Image_bright.setText("");
 
+        boolean isBadQuality = false;
+
         // Check focus & clarity
         if (edgeDensity > 0.06 && sharpness > 300) {
+            myTextView.append("* The image is sharp and well-focused with great edge detail.\n");
+
             if (contrast > 249) {
-                myTextView.setText("Image is clear.");
+                myTextView.append("* Excellent contrast detected.\n");
+            } else if (contrast >= 200 && contrast <= 249) {
+                myTextView.append("* Contrast is acceptable.\n");
+            } else if (contrast < 150) {
+                isBadQuality = true;
+                myTextView.append("* Image has very low contrast.\n");
             } else {
-                myTextView.setText("Image is not focused.");
+                isBadQuality = true;
+                myTextView.append("* Image contrast is slightly low.\n");
             }
         } else if (edgeDensity == 0.07 && contrast < 249) {
-            myTextView.setText("Image is not focused.");
+            isBadQuality = true;
+            myTextView.append("* The image lacks proper focus.\n");
         } else if (edgeDensity < 0.07 && sharpness < 300) {
-            myTextView.setText("Image is not focused.");
+            isBadQuality = true;
+            myTextView.append("* The image lacks proper focus.\n");
         } else {
-            myTextView.setText("Image is unclear.");
+            isBadQuality = true;
+            myTextView.append("* The image seems unclear and not focused properly.\n");
         }
-
-        // Make the message visible
-        myTextView.setVisibility(View.VISIBLE);
 
         // Check brightness
-        if (brightness < 80) {
-            Image_bright.setText("Image lacks lighting.");
-            Image_bright.setVisibility(View.VISIBLE);
-        } else if (brightness <= 170) {
-        } else {
-            Image_bright.setText("Image is overexposed in light.");
-            Image_bright.setVisibility(View.VISIBLE);
+        if (brightness >= 0 && brightness <= 50) {
+            isBadQuality = true;
+            myTextView.append("* Image is extremely underexposed.\n");
+        } else if (brightness > 50 && brightness <= 80) {
+            isBadQuality = true;
+            myTextView.append("* Image is too dark.\n");
+        } else if (brightness > 80 && brightness <= 120) {
+            myTextView.append("* Image could use a bit more lighting.\n");
+        } else if (brightness > 120 && brightness <= 170) {
+            // Ideal range
+        } else if (brightness > 170 && brightness <= 200) {
+            myTextView.append("* Image is a bit overexposed.\n");
+        } else if (brightness > 200 && brightness <= 230) {
+            isBadQuality = true;
+            myTextView.append("* Image is too bright.\n");
+        } else if (brightness > 230 && brightness <= 255) {
+            isBadQuality = true;
+            myTextView.append("* Image is highly overexposed.\n");
         }
+
+        // Final message
+        String qualityLevel = isBadQuality ? "Bad" : "Good";
+        String finalMessage = "Image Quality: " + qualityLevel;
+        Image_bright.setText(finalMessage);
+        Image_bright.setVisibility(View.VISIBLE);
+        String existingText = myTextView.getText().toString();
+        String newText = "Reasons : \n";
+        myTextView.setText(newText + existingText);
+        myTextView.setVisibility(View.VISIBLE);
+
     }
+
     private void requestPermissions() {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
