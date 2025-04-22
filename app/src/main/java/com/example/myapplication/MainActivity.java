@@ -55,17 +55,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String IMAGE_FILE_PATH = "";
     private static final int REQUEST_PERMISSIONS = 123;
     private static final int REQUEST_IMAGE_CAPTURE = 456;
-    private static final int REQUEST_IMAGE_PICK = 789;
     private static final int REQUEST_GALLERY_PICK = 1011;
     private Uri photoUri;
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
     ImageView selectedImageView;
-    Button pickImageButton;
-    private static final int PICK_IMAGE_REQUEST = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+//        getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
@@ -266,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
         myTextView.setVisibility(View.VISIBLE);
 
         // Check brightness
-        if (brightness < 90) {
+        if (brightness < 80) {
             Image_bright.setText("Image lacks lighting.");
             Image_bright.setVisibility(View.VISIBLE);
         } else if (brightness <= 170) {
@@ -290,9 +286,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d("requestCode", String.valueOf(requestCode));
-        Log.d("resultcode", String.valueOf(resultCode));
-        Log.d("Result_ok", String.valueOf(RESULT_OK));
         if (resultCode == RESULT_OK) {
             if (requestCode == REQUEST_IMAGE_CAPTURE) {
                 analyzeImage(String.valueOf(photoUri));
