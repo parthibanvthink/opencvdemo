@@ -279,9 +279,12 @@ public class MainActivity extends AppCompatActivity {
         } else if (brightness > 50 && brightness <= 80) {
             isBadQuality = true;
             myTextView.append("* Image is too dark.\n");
-        } else if (brightness > 80 && brightness <= 200) {
+        } else if (brightness > 80 && brightness <= 120) {
+            isBadQuality = true;
+            myTextView.append("* Image could use a bit more lighting.\n");
+        } else if (brightness > 120 && brightness <= 170) {
             // Ideal range
-        } else if (brightness > 200 && brightness <= 230) {
+        } else if (brightness > 170 && brightness <= 230) {
             isBadQuality = true;
             myTextView.append("* Image is overexposed.\n");
         } else if (brightness > 230 && brightness <= 255) {
