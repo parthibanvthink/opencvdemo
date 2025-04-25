@@ -1,14 +1,15 @@
 package com.example.myapplication;
 
+import static android.widget.SeekBar.*;
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-
-import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -20,7 +21,6 @@ import android.view.View;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
-import androidx.core.view.WindowCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -38,8 +38,8 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -50,9 +50,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import android.Manifest;
+
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -64,8 +65,11 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
     ImageView selectedImageView;
+    private ImageView previewImage;
+    private SeekBar brightnessSlider, sharpnessSlider, contrastSlider;
+    private Button applyBtn;
+    private Bitmap originalBitmap;
 
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -98,6 +102,130 @@ public class MainActivity extends AppCompatActivity {
         if (OpenCVLoader.initLocal()) {
             Log.i("OpenCV", "OpenCV successfully loaded.");
         }
+        previewImage = findViewById(R.id.previewImage);
+        brightnessSlider = findViewById(R.id.brightnessSlider);
+        sharpnessSlider = findViewById(R.id.sharpnessSlider);
+        contrastSlider = findViewById(R.id.contrastSlider);
+        applyBtn = findViewById(R.id.applyBtn);
+        TextView brightnessValueText = findViewById(R.id.brightnessValueText);
+        TextView sharpnessValueText = findViewById(R.id.sharpnessValueText);
+        TextView contrastValueText = findViewById(R.id.contrastValueText);
+        applyBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (originalBitmap != null) {
+                    int brightnessVal = brightnessSlider.getProgress(); // range 0–100
+                    int sharpnessVal = sharpnessSlider.getProgress();   // range 0–100
+                    int contrastVal = contrastSlider.getProgress();     // range 0–100
+                    Log.d("brightnessVal", String.valueOf(brightnessVal));
+                    Log.d("sharpnessVal", String.valueOf(sharpnessVal));
+                    Log.d("contrastVal", String.valueOf(contrastVal));
+                    // Convert bitmap to Mat
+                    Mat mat = new Mat();
+                    Utils.bitmapToMat(originalBitmap, mat);
+
+                    // Apply adjustments
+                    Mat adjustedMat = adjustImageWithOpenCV(mat, brightnessVal, sharpnessVal, contrastVal);
+
+                    // Convert back to Bitmap
+                    Bitmap adjustedBitmap = Bitmap.createBitmap(adjustedMat.cols(), adjustedMat.rows(), Bitmap.Config.ARGB_8888);
+                    Utils.matToBitmap(adjustedMat, adjustedBitmap);
+                    checkImage(adjustedBitmap);
+                    // Display in previewImage
+                    previewImage.setImageBitmap(adjustedBitmap);
+                    previewImage.setVisibility(View.VISIBLE);
+                } else {
+                    Toast.makeText(MainActivity.this, "No image selected!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        brightnessSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                brightnessValueText.setText("Brightness: " + progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // Optional: do something when user starts dragging
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // Optional: do something when user stops dragging
+            }
+        });
+        sharpnessSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                sharpnessValueText.setText("Sharpness: " + progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // Optional: do something when user starts dragging
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // Optional: do something when user stops dragging
+            }
+        });
+        contrastSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                contrastValueText.setText("Contrast: " + progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // Optional: do something when user starts dragging
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // Optional: do something when user stops dragging
+            }
+        });
+
+
+        // Set onClickListener for the classify button
+    }
+    // Load the TensorFlow Lite model
+
+
+    private Mat adjustImageWithOpenCV(Mat image, int brightnessVal, int sharpnessVal, int contrastVal) {
+        Mat adjusted = new Mat();
+        image.copyTo(adjusted);
+
+        // Convert to HSV to adjust brightness
+        Imgproc.cvtColor(adjusted, adjusted, Imgproc.COLOR_BGR2HSV);
+        java.util.List<Mat> hsvChannels = new java.util.ArrayList<>();
+        Core.split(adjusted, hsvChannels);
+        double brightnessFactor = (brightnessVal - 50) * 2.0;
+        Log.d("brightnessFactor", String.valueOf(brightnessFactor));
+        Core.add(hsvChannels.get(2), new Scalar(brightnessFactor), hsvChannels.get(2));
+        Core.min(hsvChannels.get(2), new Scalar(255), hsvChannels.get(2));
+        Core.max(hsvChannels.get(2), new Scalar(0), hsvChannels.get(2));
+        Core.merge(hsvChannels, adjusted);
+        Imgproc.cvtColor(adjusted, adjusted, Imgproc.COLOR_HSV2BGR);
+
+        // Contrast adjustment
+        double alpha = contrastVal / 50.0; // Range 0 to 2
+        Log.d("alpha", String.valueOf(alpha));
+        adjusted.convertTo(adjusted, -1, alpha, 0);
+
+        // Sharpness adjustment
+        float k = sharpnessVal / 100f;
+        Log.d("k sharpeness", String.valueOf(k));
+        Mat kernel = new Mat(3, 3, CvType.CV_32F);
+        kernel.put(0, 0,
+                0, -k, 0,
+                -k, 1 + 4 * k, -k,
+                0, -k, 0);
+        Imgproc.filter2D(adjusted, adjusted, adjusted.depth(), kernel);
+
+        return adjusted;
     }
     private void openCamera() {
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -124,27 +252,6 @@ public class MainActivity extends AppCompatActivity {
         return image;
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
     @Override
     public boolean onSupportNavigateUp() {
@@ -156,6 +263,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             File tempFile  = createTempFileFromUri(Uri.parse(imagePath));
             Bitmap bitmap = BitmapFactory.decodeFile(tempFile.getAbsolutePath());
+            originalBitmap = bitmap;
             Bitmap resizedBitmap = getResizedBitmapCV(bitmap, 300, 300);
             Mat mat = new Mat();
             org.opencv.android.Utils.bitmapToMat(resizedBitmap, mat);
@@ -189,6 +297,49 @@ public class MainActivity extends AppCompatActivity {
 //            TextView myTextView = findViewById(R.id.blur_result_text);
 //            myTextView.setText(jsonOutput);
 //            myTextView.setVisibility(View.VISIBLE);
+            Log.d("JSON objects",jsonOutput);
+            // (Optional) You can return this string if calling from another method
+            // return jsonOutput;
+
+        } catch (Exception e) {
+            Log.e("ImageAnalysis", "Error analyzing image", e);
+        }
+    }
+    public void checkImage(Bitmap bitmap){
+        try {
+            Bitmap resizedBitmap = getResizedBitmapCV(bitmap, 300, 300);
+            Mat mat = new Mat();
+            org.opencv.android.Utils.bitmapToMat(resizedBitmap, mat);
+
+            // Convert to grayscale
+            Mat gray = new Mat();
+            Imgproc.cvtColor(mat, gray, Imgproc.COLOR_BGR2GRAY);
+
+            // Calculate brightness (mean)
+            Scalar meanScalar = Core.mean(gray);
+            double brightness = meanScalar.val[0];
+
+            // Calculate sharpness (variance of Laplacian)
+            Mat laplacian = new Mat();
+            Imgproc.Laplacian(gray, laplacian, CvType.CV_64F);
+            Mat laplacianSquared = new Mat();
+            Core.multiply(laplacian, laplacian, laplacianSquared);
+            Scalar laplacianMean = Core.mean(laplacianSquared);
+            double sharpness = laplacianMean.val[0];
+
+            Mat edges = new Mat();
+            Imgproc.Canny(gray, edges, 100, 200);
+            int edgePixels = Core.countNonZero(edges);
+
+            double edgeDensity = (double) edgePixels / (gray.rows() * gray.cols());
+            Core.MinMaxLocResult mmr = Core.minMaxLoc(gray);
+
+            double contrast = mmr.maxVal - mmr.minVal;
+            analyzeImage(sharpness,edgeDensity,contrast,brightness);
+            String jsonOutput = String.format("{\"brightness\": %.2f, \"sharpness\": %.2f,\"edgeDensity\": %.2f,\"contrast\": %.2f}", brightness, sharpness,edgeDensity,contrast);
+            TextView myTextView = findViewById(R.id.blur_result_text);
+            myTextView.setText(jsonOutput);
+            myTextView.setVisibility(View.VISIBLE);
             Log.d("JSON objects",jsonOutput);
             // (Optional) You can return this string if calling from another method
             // return jsonOutput;
@@ -304,6 +455,71 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void fixAutoBrightness(String imagePath) throws IOException {
+        File tempFile  = createTempFileFromUri(Uri.parse(imagePath));
+        Bitmap bitmap = BitmapFactory.decodeFile(tempFile.getAbsolutePath());
+        Bitmap resizedBitmap = getResizedBitmapCV(bitmap, 300, 300);
+        Log.d("Image path in the fix auto brightness",imagePath);
+        // Load input image
+        Mat image = Imgcodecs.imread(tempFile.getAbsolutePath());
+        Log.d("Log in second line", String.valueOf(image));
+        if (image.empty()) {
+            System.out.println("Image not found.");
+            return;
+        }
+
+        // Convert to HSV
+        Mat hsv = new Mat();
+        Imgproc.cvtColor(image, hsv, Imgproc.COLOR_BGR2HSV);
+
+        // Split channels
+        List<Mat> hsvChannels = new ArrayList<>();
+        Core.split(hsv, hsvChannels);
+
+        Mat vChannel = hsvChannels.get(2); // V channel = brightness
+
+        // Calculate average brightness
+        Scalar avgBrightnessScalar = Core.mean(vChannel);
+        double avgBrightness = avgBrightnessScalar.val[0];
+        System.out.println("Average Brightness: " + avgBrightness);
+
+        // Set thresholds and adjustment strength
+        double underexposedThreshold = 60;
+        double overexposedThreshold = 190;
+        double adjustmentStrength = 70;
+
+        // Adjust V channel based on brightness
+        if (avgBrightness < underexposedThreshold) {
+            System.out.println("Underexposed. Increasing brightness...");
+            Core.add(vChannel, new Scalar(adjustmentStrength), vChannel);
+        } else if (avgBrightness > overexposedThreshold) {
+            System.out.println("Overexposed. Reducing brightness...");
+            Core.subtract(vChannel, new Scalar(adjustmentStrength), vChannel);
+        } else {
+            System.out.println("Exposure is okay. No change needed.");
+        }
+
+        // Clip values to [0, 255]
+        Core.min(vChannel, new Scalar(255), vChannel);
+        Core.max(vChannel, new Scalar(0), vChannel);
+
+        // Merge V back and convert to BGR
+        hsvChannels.set(2, vChannel);
+        Core.merge(hsvChannels, hsv);
+
+        Mat correctedImage = new Mat();
+        Imgproc.cvtColor(hsv, correctedImage, Imgproc.COLOR_HSV2BGR);
+
+        // Save corrected image
+        Imgcodecs.imwrite("path/to/output/corrected_image.jpg", correctedImage);
+        System.out.println("Exposure correction completed.");
+        Bitmap outputBitmap = Bitmap.createBitmap(correctedImage.cols(), correctedImage.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(correctedImage, outputBitmap);
+
+// Set to ImageView (assumes you're calling from an Activity or have reference)
+//        ImageView imageView = findViewById(R.id.imageView); // or pass ImageView as param
+//        imageView.setImageBitmap(outputBitmap);
+    }
     private void requestPermissions() {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -314,8 +530,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -325,22 +539,33 @@ public class MainActivity extends AppCompatActivity {
                 selectedImageView.setImageURI(photoUri);
                 selectedImageView.setVisibility(View.VISIBLE);
             } else if (requestCode == REQUEST_GALLERY_PICK && data != null) {
+                Log.d("data", String.valueOf(data));
                 Uri selectedImageUri = data.getData();
+                Log.d("selectedImageUri", String.valueOf(selectedImageUri));
                 analyzeImage(String.valueOf(selectedImageUri));
                 selectedImageView.setImageURI(selectedImageUri);
                 selectedImageView.setVisibility(View.VISIBLE);
+                try {
+                    fixAutoBrightness(String.valueOf(selectedImageUri));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
                 // photoUri contains the image URI
                 analyzeImage(String.valueOf(photoUri));
                 selectedImageView.setImageURI(photoUri);
                 selectedImageView.setVisibility(View.VISIBLE);
+                try {
+                    fixAutoBrightness(String.valueOf(photoUri));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
                 Toast.makeText(this, "Image saved: " + photoUri.getPath(), Toast.LENGTH_SHORT).show();
             }
         }
     }
     private void pickImageFromGallery() {
         Intent pickPhoto = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        Log.d("Pick photo data", String.valueOf(pickPhoto));
         startActivityForResult(pickPhoto, REQUEST_GALLERY_PICK);
     }
 

@@ -6,6 +6,6 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
-    <string name ="pick_Image">Pick Image</string>
-    <string name ="camera">Camera</string>
+    <string name="pick_Image">Pick Image</string>
+    <string name="camera">Camera</string>
 </resources>
