@@ -65,10 +65,6 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
     ImageView selectedImageView;
-    private ImageView previewImage;
-    private SeekBar brightnessSlider, sharpnessSlider, contrastSlider;
-    private Button applyBtn;
-    private Bitmap originalBitmap;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,97 +98,8 @@ public class MainActivity extends AppCompatActivity {
         if (OpenCVLoader.initLocal()) {
             Log.i("OpenCV", "OpenCV successfully loaded.");
         }
-        previewImage = findViewById(R.id.previewImage);
-        brightnessSlider = findViewById(R.id.brightnessSlider);
-        sharpnessSlider = findViewById(R.id.sharpnessSlider);
-        contrastSlider = findViewById(R.id.contrastSlider);
-        applyBtn = findViewById(R.id.applyBtn);
-        TextView brightnessValueText = findViewById(R.id.brightnessValueText);
-        TextView sharpnessValueText = findViewById(R.id.sharpnessValueText);
-        TextView contrastValueText = findViewById(R.id.contrastValueText);
-        applyBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (originalBitmap != null) {
-                    int brightnessVal = brightnessSlider.getProgress(); // range 0–100
-                    int sharpnessVal = sharpnessSlider.getProgress();   // range 0–100
-                    int contrastVal = contrastSlider.getProgress();     // range 0–100
-                    Log.d("brightnessVal", String.valueOf(brightnessVal));
-                    Log.d("sharpnessVal", String.valueOf(sharpnessVal));
-                    Log.d("contrastVal", String.valueOf(contrastVal));
-                    // Convert bitmap to Mat
-                    Mat mat = new Mat();
-                    Utils.bitmapToMat(originalBitmap, mat);
 
-                    // Apply adjustments
-                    Mat adjustedMat = adjustImageWithOpenCV(mat, brightnessVal, sharpnessVal, contrastVal);
-
-                    // Convert back to Bitmap
-                    Bitmap adjustedBitmap = Bitmap.createBitmap(adjustedMat.cols(), adjustedMat.rows(), Bitmap.Config.ARGB_8888);
-                    Utils.matToBitmap(adjustedMat, adjustedBitmap);
-                    checkImage(adjustedBitmap);
-                    // Display in previewImage
-                    previewImage.setImageBitmap(adjustedBitmap);
-                    previewImage.setVisibility(View.VISIBLE);
-                } else {
-                    Toast.makeText(MainActivity.this, "No image selected!", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-        brightnessSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                brightnessValueText.setText("Brightness: " + progress);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                // Optional: do something when user starts dragging
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                // Optional: do something when user stops dragging
-            }
-        });
-        sharpnessSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                sharpnessValueText.setText("Sharpness: " + progress);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                // Optional: do something when user starts dragging
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                // Optional: do something when user stops dragging
-            }
-        });
-        contrastSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                contrastValueText.setText("Contrast: " + progress);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                // Optional: do something when user starts dragging
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                // Optional: do something when user stops dragging
-            }
-        });
-
-
-        // Set onClickListener for the classify button
     }
-    // Load the TensorFlow Lite model
-
 
     private Mat adjustImageWithOpenCV(Mat image, int brightnessVal, int sharpnessVal, int contrastVal) {
         Mat adjusted = new Mat();
@@ -203,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
         java.util.List<Mat> hsvChannels = new java.util.ArrayList<>();
         Core.split(adjusted, hsvChannels);
         double brightnessFactor = (brightnessVal - 50) * 2.0;
-        Log.d("brightnessFactor", String.valueOf(brightnessFactor));
         Core.add(hsvChannels.get(2), new Scalar(brightnessFactor), hsvChannels.get(2));
         Core.min(hsvChannels.get(2), new Scalar(255), hsvChannels.get(2));
         Core.max(hsvChannels.get(2), new Scalar(0), hsvChannels.get(2));
@@ -212,12 +118,10 @@ public class MainActivity extends AppCompatActivity {
 
         // Contrast adjustment
         double alpha = contrastVal / 50.0; // Range 0 to 2
-        Log.d("alpha", String.valueOf(alpha));
         adjusted.convertTo(adjusted, -1, alpha, 0);
 
         // Sharpness adjustment
         float k = sharpnessVal / 100f;
-        Log.d("k sharpeness", String.valueOf(k));
         Mat kernel = new Mat(3, 3, CvType.CV_32F);
         kernel.put(0, 0,
                 0, -k, 0,
@@ -263,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             File tempFile  = createTempFileFromUri(Uri.parse(imagePath));
             Bitmap bitmap = BitmapFactory.decodeFile(tempFile.getAbsolutePath());
-            originalBitmap = bitmap;
+//            originalBitmap = bitmap;
             Bitmap resizedBitmap = getResizedBitmapCV(bitmap, 300, 300);
             Mat mat = new Mat();
             org.opencv.android.Utils.bitmapToMat(resizedBitmap, mat);
@@ -297,49 +201,6 @@ public class MainActivity extends AppCompatActivity {
 //            TextView myTextView = findViewById(R.id.blur_result_text);
 //            myTextView.setText(jsonOutput);
 //            myTextView.setVisibility(View.VISIBLE);
-            Log.d("JSON objects",jsonOutput);
-            // (Optional) You can return this string if calling from another method
-            // return jsonOutput;
-
-        } catch (Exception e) {
-            Log.e("ImageAnalysis", "Error analyzing image", e);
-        }
-    }
-    public void checkImage(Bitmap bitmap){
-        try {
-            Bitmap resizedBitmap = getResizedBitmapCV(bitmap, 300, 300);
-            Mat mat = new Mat();
-            org.opencv.android.Utils.bitmapToMat(resizedBitmap, mat);
-
-            // Convert to grayscale
-            Mat gray = new Mat();
-            Imgproc.cvtColor(mat, gray, Imgproc.COLOR_BGR2GRAY);
-
-            // Calculate brightness (mean)
-            Scalar meanScalar = Core.mean(gray);
-            double brightness = meanScalar.val[0];
-
-            // Calculate sharpness (variance of Laplacian)
-            Mat laplacian = new Mat();
-            Imgproc.Laplacian(gray, laplacian, CvType.CV_64F);
-            Mat laplacianSquared = new Mat();
-            Core.multiply(laplacian, laplacian, laplacianSquared);
-            Scalar laplacianMean = Core.mean(laplacianSquared);
-            double sharpness = laplacianMean.val[0];
-
-            Mat edges = new Mat();
-            Imgproc.Canny(gray, edges, 100, 200);
-            int edgePixels = Core.countNonZero(edges);
-
-            double edgeDensity = (double) edgePixels / (gray.rows() * gray.cols());
-            Core.MinMaxLocResult mmr = Core.minMaxLoc(gray);
-
-            double contrast = mmr.maxVal - mmr.minVal;
-            analyzeImage(sharpness,edgeDensity,contrast,brightness);
-            String jsonOutput = String.format("{\"brightness\": %.2f, \"sharpness\": %.2f,\"edgeDensity\": %.2f,\"contrast\": %.2f}", brightness, sharpness,edgeDensity,contrast);
-            TextView myTextView = findViewById(R.id.blur_result_text);
-            myTextView.setText(jsonOutput);
-            myTextView.setVisibility(View.VISIBLE);
             Log.d("JSON objects",jsonOutput);
             // (Optional) You can return this string if calling from another method
             // return jsonOutput;
