@@ -109,57 +109,7 @@
                 android:background="#EEEEEE"
                 android:layout_marginBottom="30dp"
                 android:visibility="gone"/>
-            <ImageView
-                android:id="@+id/previewImage"
-                android:layout_width="500dp"
-                android:layout_height="500dp"
-                android:layout_marginTop="30dp"
-                android:scaleType="fitCenter"
-                android:adjustViewBounds="true"
-                android:background="#EEEEEE"
-                android:layout_marginBottom="30dp"
-                android:visibility="gone"/>
-            <TextView android:text="Brightness"   android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-            <SeekBar
-                android:id="@+id/brightnessSlider"
-                android:max="100"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-            <TextView
-                android:id="@+id/brightnessValueText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Brightness: " />
-            <TextView android:text="Sharpness"   android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-            <SeekBar
-                android:id="@+id/sharpnessSlider"
-                android:max="100"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-            <TextView
-                android:id="@+id/sharpnessValueText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Sharpness: " />
-            <TextView android:text="Contrast"   android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-            <SeekBar
-                android:id="@+id/contrastSlider"
-                android:max="100"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-            <TextView
-                android:id="@+id/contrastValueText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Contrast: " />
-            <Button
-                android:id="@+id/applyBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Apply" />
+
         </LinearLayout>
        </ScrollView>
 

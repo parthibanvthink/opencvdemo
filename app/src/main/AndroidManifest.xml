@@ -21,14 +21,12 @@
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
         <activity
-            android:name=".ModelDemo"
+            android:name=".ImageAdjustmentActivity"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
+        <activity
+            android:name=".ModelDemo"
+            android:exported="true"></activity>
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -46,7 +44,11 @@
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.MyApplication">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
     </application>
 
