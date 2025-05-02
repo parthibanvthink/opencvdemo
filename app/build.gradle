@@ -47,4 +47,5 @@ dependencies {
     implementation project(':opencv')
     implementation 'org.tensorflow:tensorflow-lite:2.13.0'
     implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.16.3'
+    implementation 'org.tensorflow:tensorflow-lite-support:0.3.1'
 }
