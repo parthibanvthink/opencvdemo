@@ -1,5 +1,7 @@
 package com.example.myapplication;
 
+import static com.example.myapplication.R.id.outputValue;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
@@ -8,6 +10,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
@@ -60,6 +64,7 @@ public class CustomModel extends AppCompatActivity {
             interpreter = new Interpreter(loadModelFile("detect.tflite"));
             interpreter.allocateTensors();
             int inputTensors = interpreter.getInputTensorCount();
+
             Log.d("inputTensors", String.valueOf(inputTensors)) ;
             int outputTensors = interpreter.getOutputTensorCount();
             Log.d("outputTensors", String.valueOf(outputTensors));
@@ -108,7 +113,8 @@ public class CustomModel extends AppCompatActivity {
         boolean found = false;
 // This will help you see all class predictions for each detection
         Log.d("Detection", "outputClasses (raw): " + Arrays.toString(outputClasses[0]));
-
+        Log.d("outputScores", Arrays.toString(outputScores[0]));
+        String resultText = "";
         for (int i = 0; i < detectionCount; i++) {
             float score = outputScores[0][i];
             Log.d("score", String.valueOf(score));
@@ -117,12 +123,14 @@ public class CustomModel extends AppCompatActivity {
                 int classId = (int) outputClasses[0][i];
                 Log.d("classId", String.valueOf(classId));
                 String label = classId < labels.size() ? labels.get(classId) : "ID " + classId;
-
+                resultText += String.format(" - %s: %.2f\n", label, score);
                 Log.d("Detection", " - " + label + ": " + String.format("%.2f", score));
                 found = true;
             }
         }
-
+        TextView outputValue = findViewById(R.id.outputValue);
+        outputValue.setText(resultText);
+        outputValue.setVisibility(View.VISIBLE);
         if (!found) {
             Log.d("Detection", "No object detected above the confidence threshold.");
         }
@@ -163,6 +171,9 @@ public class CustomModel extends AppCompatActivity {
 
         float[] data = new float[height * width * 3];
         resizedMat.get(0, 0, data);
+        float[] testPixel = new float[3]; // for RGB
+        resizedMat.get(100, 100, testPixel); // sample pixel at (100, 100)
+        Log.d("DEBUG_PIXEL", "Pixel(100,100) after normalization: R=" + testPixel[0] + ", G=" + testPixel[1] + ", B=" + testPixel[2]);
 
         int index = 0;
         for (int y = 0; y < height; y++) {
@@ -227,9 +238,9 @@ public class CustomModel extends AppCompatActivity {
         float[][][][] inputData = preprocessImage(imageMat);
 
         // Create output arrays for model inference results
-        float[][] outputScores = new float[1][10];  // Modify size according to your model
-        float[][][] outputBoxes = new float[1][10][4];  // Modify size according to your model
-        float[][] outputClasses = new float[1][10];  // Modify size according to your model
+        float[][] outputScores = new float[1][10];
+        float[][][] outputBoxes = new float[1][10][4];
+        float[][] outputClasses = new float[1][10];
         float[] numDetections = new float[1];
 
         // Run inference (equivalent to interpreter.invoke())
